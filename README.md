@@ -57,7 +57,7 @@ zero quota, and structural immunity to the torch/NumPy-ABI trap.
 ## Install (as a hermes-agent plugin)
 
 ```bash
-git clone https://github.com/USERNAME/mnemosyne.git
+git clone https://github.com/merlinrabens/mnemosyne.git
 cp -r mnemosyne "$HERMES_HOME/plugins/mnemosyne"
 "$HERMES_HOME/hermes-agent/venv/bin/pip" install fastembed==0.8.0 sqlite-vec==0.1.9
 ```

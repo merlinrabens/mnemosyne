@@ -26,8 +26,8 @@ dependencies = [
 dev = ["pytest>=8", "ruff>=0.6"]
 
 [project.urls]
-Homepage = "https://github.com/USERNAME/mnemosyne"
-Issues = "https://github.com/USERNAME/mnemosyne/issues"
+Homepage = "https://github.com/merlinrabens/mnemosyne"
+Issues = "https://github.com/merlinrabens/mnemosyne/issues"
 
 [tool.setuptools]
 packages = ["mnemosyne"]
