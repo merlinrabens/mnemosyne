@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# mnemosyne local index (regenerable, large — never commit)
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+.mnemosyne_heal_attempt
+
+# fastembed / huggingface model cache
+.cache/
+*.onnx
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# vhs working artifacts (keep the committed assets/, ignore scratch)
+*.tape.tmp

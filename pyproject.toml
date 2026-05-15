@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mnemosyne-memory"
+version = "0.1.0"
+description = "Local-first hybrid (BM25 + zero-torch neural vector, RRF-fused) semantic memory provider for hermes-agent."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Merlin Rabens" }]
+keywords = ["hermes-agent", "memory", "rag", "retrieval", "sqlite-vec", "fastembed", "local-first", "hybrid-search", "rrf"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Intended Audience :: Developers",
+]
+dependencies = [
+  "fastembed==0.8.0",
+  "sqlite-vec==0.1.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/USERNAME/mnemosyne"
+Issues = "https://github.com/USERNAME/mnemosyne/issues"
+
+[tool.setuptools]
+packages = ["mnemosyne"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Pragmatic: the codebase deliberately uses broad excepts at degradation
+# boundaries (a memory layer must never crash its host). Those are
+# annotated `# noqa: BLE001` inline; keep the default rule set otherwise.
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]  # long lines in SQL/docstrings are intentional

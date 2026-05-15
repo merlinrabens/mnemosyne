@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="mnemosyne logo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cff"/>
+      <stop offset="1" stop-color="#22b8cf"/>
+    </linearGradient>
+  </defs>
+
+  <!-- outer ring: a recall spiral (memory) -->
+  <circle cx="100" cy="100" r="86" fill="none" stroke="url(#g)" stroke-width="3" opacity="0.35"/>
+  <path d="M100 24
+           A76 76 0 1 1 31 138
+           A60 60 0 1 0 152 92
+           A44 44 0 1 1 78 132
+           A28 28 0 1 0 124 90"
+        fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- hybrid retrieval: two arms converging on one node -->
+  <g stroke="url(#g)" stroke-width="3" stroke-linecap="round">
+    <line x1="58" y1="62" x2="100" y2="100"/>
+    <line x1="150" y1="70" x2="100" y2="100"/>
+    <line x1="92" y1="150" x2="100" y2="100"/>
+  </g>
+  <g fill="#7c5cff">
+    <circle cx="58" cy="62" r="7"/>
+    <circle cx="150" cy="70" r="7"/>
+    <circle cx="92" cy="150" r="7"/>
+  </g>
+  <circle cx="100" cy="100" r="11" fill="#22b8cf"/>
+  <circle cx="100" cy="100" r="11" fill="none" stroke="#fff" stroke-width="2" opacity="0.85"/>
+</svg>
