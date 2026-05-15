@@ -61,8 +61,8 @@ def _ensure_deps() -> None:
     silently gone until someone notices'.
     """
     try:
-        import sqlite_vec  # noqa: F401
         import fastembed  # noqa: F401
+        import sqlite_vec  # noqa: F401
         return
     except Exception:
         pass
@@ -100,8 +100,8 @@ def _ensure_deps() -> None:
             continue
     import importlib
     importlib.invalidate_caches()
-    import sqlite_vec  # noqa: F401  — raises if heal genuinely failed
     import fastembed  # noqa: F401
+    import sqlite_vec  # noqa: F401  — raises if heal genuinely failed
     try:
         _HEAL_FLAG.unlink()  # success → clear the throttle
     except OSError:

@@ -103,9 +103,9 @@ MEM_FEEDBACK_SCHEMA = {
 # ── Config ───────────────────────────────────────────────────────────────────
 def _load_plugin_config() -> dict:
     try:
-        from hermes_constants import get_hermes_home
-        from hermes_cli.config import cfg_get
         import yaml
+        from hermes_cli.config import cfg_get
+        from hermes_constants import get_hermes_home
 
         cfgp = get_hermes_home() / "config.yaml"
         if not cfgp.exists():
