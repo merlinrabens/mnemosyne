@@ -70,12 +70,16 @@ def _ensure_deps() -> None:
         raise ImportError("mnemosyne deps missing and self-heal already "
                            "attempted this process")
     _ensure_deps._tried = True
-    # Cross-process throttle: don't reattempt more than once/day if it
-    # keeps failing (e.g. offline) — avoids hammering pip every call.
+    # Cross-process throttle: don't hammer pip on every call if heal keeps
+    # failing — but keep the window SHORT. A long window turns a single
+    # transient import failure (e.g. a host-restart race) into a long
+    # outage; 30 min lets a transient self-recover fast instead. The happy
+    # path (deps importable) returned above and never reaches here.
+    _THROTTLE_SECONDS = 1800
     try:
-        if _HEAL_FLAG.exists() and (time.time() - _HEAL_FLAG.stat().st_mtime) < 86400:
+        if _HEAL_FLAG.exists() and (time.time() - _HEAL_FLAG.stat().st_mtime) < _THROTTLE_SECONDS:
             raise ImportError("mnemosyne deps missing; recent heal attempt "
-                              "failed (throttled 24h)")
+                              "failed (throttled 30min, self-recovers)")
     except OSError:
         pass
     try:
