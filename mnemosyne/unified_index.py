@@ -47,6 +47,22 @@ DB_PATH = Path(
     os.environ.get("MNEMOSYNE_DB", "~/.mnemosyne/index.db")
 ).expanduser()
 _HEAL_FLAG = DB_PATH.parent / ".mnemosyne_heal_attempt"
+# Failure breadcrumb: when deps can't load, the exact reason is written
+# here. A health watchdog (see docs) reads this so its alert says WHY,
+# instead of a generic "memory down". Written only on failure / recovery
+# transitions — never on the happy path (no per-call IO).
+_HEALTH = _HEAL_FLAG.with_name(".mnemosyne_health")
+
+
+def _write_health(status: str, detail: str = "") -> None:
+    import json as _json
+    try:
+        _HEALTH.parent.mkdir(parents=True, exist_ok=True)
+        _HEALTH.write_text(_json.dumps(
+            {"status": status, "ts": time.time(), "detail": str(detail)[:600]}
+        ))
+    except OSError:
+        pass
 
 
 def _ensure_deps() -> None:
@@ -64,9 +80,11 @@ def _ensure_deps() -> None:
         import fastembed  # noqa: F401
         import sqlite_vec  # noqa: F401
         return
-    except Exception:
-        pass
+    except Exception as _e:
+        _import_error = _e  # captured so the failure breadcrumb says WHY
     if getattr(_ensure_deps, "_tried", False):
+        _write_health("down", f"deps missing; self-heal already tried this "
+                              f"process: {_import_error!r}")
         raise ImportError("mnemosyne deps missing and self-heal already "
                            "attempted this process")
     _ensure_deps._tried = True
@@ -77,9 +95,15 @@ def _ensure_deps() -> None:
     # path (deps importable) returned above and never reaches here.
     _THROTTLE_SECONDS = 1800
     try:
-        if _HEAL_FLAG.exists() and (time.time() - _HEAL_FLAG.stat().st_mtime) < _THROTTLE_SECONDS:
-            raise ImportError("mnemosyne deps missing; recent heal attempt "
-                              "failed (throttled 30min, self-recovers)")
+        if _HEAL_FLAG.exists():
+            age = time.time() - _HEAL_FLAG.stat().st_mtime
+            if age >= _THROTTLE_SECONDS:
+                _HEAL_FLAG.unlink()  # STALE → remove proactively, never linger
+            else:
+                _write_health("down", f"deps missing; heal throttled, "
+                              f"{int(_THROTTLE_SECONDS - age)}s left: {_import_error!r}")
+                raise ImportError("mnemosyne deps missing; recent heal attempt "
+                                  "failed (throttled 30min, self-recovers)")
     except OSError:
         pass
     try:
@@ -104,8 +128,13 @@ def _ensure_deps() -> None:
             continue
     import importlib
     importlib.invalidate_caches()
-    import fastembed  # noqa: F401
-    import sqlite_vec  # noqa: F401  — raises if heal genuinely failed
+    try:
+        import fastembed  # noqa: F401
+        import sqlite_vec  # noqa: F401
+    except Exception as _he:
+        _write_health("down", f"self-heal pip install did not fix it: {_he!r}")
+        raise
+    _write_health("ok", "recovered via self-heal")
     try:
         _HEAL_FLAG.unlink()  # success → clear the throttle
     except OSError:

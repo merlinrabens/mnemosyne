@@ -53,6 +53,38 @@ zero quota, and structural immunity to the torch/NumPy-ABI trap.
 - **Self-healing deps** — survives a host venv regeneration (auto-reinstalls pinned deps once).
 - **Upgrade-safe** — lives in the user-plugin dir, outside the host venv.
 - **Write-gated** — only `primary` agent contexts write; cron/subagents are read-only.
+- **Never silent** — on dep failure it writes a `.mnemosyne_health` breadcrumb with the *exact* reason; pair it with a health watchdog so degradation alerts you instead of rotting quietly.
+
+## Never failing silently
+
+A memory layer that dies quietly is worse than no memory: you keep
+trusting an agent that has gone amnesiac. mnemosyne is built so that
+*never happens*:
+
+1. The 30-min self-heal throttle means a transient dep failure
+   self-recovers fast instead of becoming a multi-hour outage.
+2. On any dep failure it writes `.mnemosyne_health`
+   (`{status, ts, detail}`) next to the index DB — capturing the **exact
+   exception**, not a generic "down".
+3. Wire a **health watchdog** on your host's scheduler that runs a light
+   probe and *speaks up* when degraded. Reference probe:
+
+```python
+import sys, os, json, traceback, time
+sys.path.insert(0, "path/to/mnemosyne")
+try:
+    from mnemosyne import unified_index as ui
+    ui._ensure_deps()
+    c = ui.connect(os.environ.get("MNEMOSYNE_DB", "index.db"))
+    ui.corpus_stats(c); c.close()          # cheap: no model load
+except Exception:
+    why = traceback.format_exc().strip().splitlines()[-1]
+    print(f"⚠️ mnemosyne DEGRADED: {why}")  # → route to your alert channel
+```
+
+On hermes-agent this is a one-liner: `hermes cron create 'every 10m'
+--no-agent --script healthcheck.py --deliver telegram:<chat>` — empty
+stdout when healthy (silent), the alert delivered verbatim when not.
 
 ## Install (as a hermes-agent plugin)
 
